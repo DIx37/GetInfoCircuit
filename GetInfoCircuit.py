@@ -91,7 +91,7 @@ class GetProviderInfo(Script):
 			provider_comments = Provider.objects.get(id = provider_id).comments
 
 
-			self.log_info(f"<b>Провайдер:</b> {Provider.objects.get(id = provider_id).name}<p>")
+			self.log_info(f"<b>Провайдер:</b> {provider_name}<p>")
 			self.log_info(f"<b>account:</b> {Provider.objects.get(id = provider_id).account}<p>")
 			if provider_portal_url != None:
 				self.log_info(f"<b>portal_url:</b> {Provider.objects.get(id = provider_id).portal_url}<p>")
