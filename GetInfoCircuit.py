@@ -92,18 +92,20 @@ class GetProviderInfo(Script):
 
 
 			self.log_info(f"<b>Провайдер:</b> {provider_name}<p>")
-			self.log_info(f"<b>account:</b> {Provider.objects.get(id = provider_id).account}<p>")
+			self.log_info(f"<b>account:</b> {provider_account}<p>")
 			if provider_portal_url != None:
-				self.log_info(f"<b>portal_url:</b> {Provider.objects.get(id = provider_id).portal_url}<p>")
+				self.log_info(f"<b>portal_url:</b> {provider_portal_url}<p>")
 			if provider_comments != None:
-				self.log_info(f"<b>comments:</b> {Provider.objects.get(id = provider_id).comments}<p>")
+				self.log_info(f"<b>comments:</b> {provider_comments}<p>")
 
 
 			circuit_id = Circuit.objects.get(provider_id = provider_id).id
 			circuit_termination_date = Circuit.objects.get(provider_id = provider_id).termination_date
 			circuit_description = Circuit.objects.get(provider_id = provider_id).description
-			circuit_port_speed = Circuit.objects.get(provider_id = provider_id).termination_z.port_speed
-			circuit_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_z.upstream_speed
+			circuit_a_port_speed = Circuit.objects.get(provider_id = provider_id).termination_a.port_speed
+			circuit_z_port_speed = Circuit.objects.get(provider_id = provider_id).termination_z.port_speed
+			circuit_a_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_a.upstream_speed
+			circuit_z_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_z.upstream_speed
 			circuit_comments = Circuit.objects.get(provider_id = provider_id).comments
 
 
@@ -113,10 +115,14 @@ class GetProviderInfo(Script):
 				self.log_info(f"<b>termination_date:</b> {circuit_termination_date}<p>")
 			if circuit_description != None:
 				self.log_info(f"<b>description:</b> {circuit_description}<p>")
-			if circuit_port_speed != None:
-				self.log_info(f"<b>termination_z port_speed</b> {circuit_port_speed}<p>")
-			if circuit_upstream_speed != None:
-				self.log_info(f"<b>termination_z upstream_speed:</b> {circuit_upstream_speed}<p>")
+			if circuit_a_port_speed != None:
+				self.log_info(f"<b>circuit_a_port_speed:</b> {circuit_a_port_speed}<p>")
+			if circuit_z_port_speed != None:
+				self.log_info(f"<b>circuit_z_port_speed:</b> {circuit_z_port_speed}<p>")
+			if circuit_a_port_speed != None:
+				self.log_info(f"<b>circuit_a_upstream_speed:</b> {circuit_a_upstream_speed}<p>")
+			if circuit_z_port_speed != None:
+				self.log_info(f"<b>circuit_z_upstream_speed:</b> {circuit_z_upstream_speed}<p>")
 			if circuit_comments != None:
 				self.log_info(f"<b>comments:</b> {circuit_comments}<p>")
 
