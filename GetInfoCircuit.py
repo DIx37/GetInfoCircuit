@@ -92,11 +92,11 @@ class GetProviderInfo(Script):
 
 
 			self.log_info(f"<b>Провайдер:</b> {provider_name}<p>")
-			self.log_info(f"<b>account:</b> {provider_account}<p>")
+			self.log_info(f"<b>Договор:</b> {provider_account}<p>")
 			if provider_portal_url != None:
-				self.log_info(f"<b>portal_url:</b> {provider_portal_url}<p>")
+				self.log_info(f"<b>Сайт:</b> {provider_portal_url}<p>")
 			if provider_comments != None:
-				self.log_info(f"<b>comments:</b> {provider_comments}<p>")
+				self.log_info(f"<b>Комментарий Провайдера:</b> {provider_comments}<p>")
 
 
 			circuit_id = Circuit.objects.get(provider_id = provider_id).id
@@ -110,19 +110,15 @@ class GetProviderInfo(Script):
 
 
 			if circuit_id != None:
-				self.log_info(f"<b>circuit_id:</b> {circuit_id}<p>")
+				self.log_info(f"<b>Договор подключения:</b> {circuit_id}<p>")
 			if circuit_termination_date != None:
-				self.log_info(f"<b>termination_date:</b> {circuit_termination_date}<p>")
+				self.log_info(f"<b>Дата подключения:</b> {circuit_termination_date}<p>")
 			if circuit_description != None:
-				self.log_info(f"<b>description:</b> {circuit_description}<p>")
-			if circuit_a_port_speed != None:
-				self.log_info(f"<b>circuit_a_port_speed:</b> {circuit_a_port_speed}<p>")
-			if circuit_z_port_speed != None:
-				self.log_info(f"<b>circuit_z_port_speed:</b> {circuit_z_port_speed}<p>")
-			if circuit_a_port_speed != None:
-				self.log_info(f"<b>circuit_a_upstream_speed:</b> {circuit_a_upstream_speed}<p>")
-			if circuit_z_port_speed != None:
-				self.log_info(f"<b>circuit_z_upstream_speed:</b> {circuit_z_upstream_speed}<p>")
+				self.log_info(f"<b>Описание:</b> {circuit_description}<p>")
+			if circuit_z_port_speed != None and circuit_z_upstream_speed != None:
+				self.log_info(f"<b>Скорость:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>")
+			if circuit_a_port_speed != None and circuit_a_upstream_speed != None:
+				self.log_info(f"<b>Скорость A:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>")
 			if circuit_comments != None:
 				self.log_info(f"<b>comments:</b> {circuit_comments}<p>")
 
@@ -144,8 +140,10 @@ class GetProviderInfo(Script):
 								circuit_id,
 								circuit_termination_date,
 								circuit_description,
-								circuit_port_speed,
-								circuit_upstream_speed,
+								circuit_a_port_speed,
+								circuit_z_port_speed,
+								circuit_a_upstream_speed,
+								circuit_z_upstream_speed,
 								circuit_comments
 								)
 					self.log_info(f"Письмо отправлено на {self.request.user.email}")
@@ -173,8 +171,10 @@ def send_email(email_to,
 				circuit_id,
 				circuit_termination_date,
 				circuit_description,
-				circuit_port_speed,
-				circuit_upstream_speed,
+				circuit_a_port_speed,
+				circuit_z_port_speed,
+				circuit_a_upstream_speed,
+				circuit_z_upstream_speed,
 				circuit_comments
 				):
 
@@ -185,22 +185,29 @@ def send_email(email_to,
 		server.starttls()
 
 
-	body = f"""
-	<h2>{name}</h2>
-	<p><strong>Адрес:</strong> {physical_address}</p>
-	<p><strong>Тип подключения:</strong> {circuit_type_name}</p>
-	<p><strong>Провайдер:</strong> {provider_name}</p>
-	<p><strong>Дата подключения:</strong> {circuit_termination_date}</p>
-	<p><strong>Комментарий Site: </strong>{site_comments}</p>
-	<p><strong>Комментарий Provider: </strong>{provider_comments}</p>
-	<p><strong>Комментарий Circuit: </strong>{circuit_comments}</p>
-	<p><strong>Описание Circuit: </strong>{circuit_description}</p>
-	<p><strong>Договор: </strong>{provider_account}&nbsp; /&nbsp; {circuit_id}</p>
-	<p><strong>Ссылка:</strong> <a href="{provider_portal_url}">{provider_portal_url}</a></p>
-	<p><strong>Скорость:</strong> {circuit_upstream_speed}</p>
-	<p><strong>Контакты:</strong></p>
-	{contact_list}
-	"""
+	body = f"<h2>{name}</h2>"
+	body += f"<p><strong>Адрес:</strong> {physical_address}</p>"
+	body += f"<p><strong>Тип подключения:</strong> {circuit_type_name}</p>"
+	body += f"<p><strong>Провайдер:</strong> {provider_name}</p>"
+	if circuit_termination_date != None:
+		body += f"<p><strong>Дата подключения:</strong> {circuit_termination_date}</p>"
+	if site_comments != "":
+		body += f"<p><strong>Комментарий Места: </strong>{site_comments}</p>"
+	if provider_comments != "":
+		body += f"<p><strong>Комментарий Провайдера: </strong>{provider_comments}</p>"
+	if circuit_comments != "":
+		body += f"<p><strong>Комментарий Подключения: </strong>{circuit_comments}</p>"
+	if circuit_description != "":
+		body += f"<p><strong>Описание Подключения: </strong>{circuit_description}</p>"
+	body += f"<p><strong>Договор: </strong>{provider_account}&nbsp; /&nbsp; {circuit_id}</p>"
+	if provider_portal_url != "":
+		body += f'<p><strong>Ссылка:</strong> <a href="{provider_portal_url}">{provider_portal_url}</a></p>'
+	if circuit_z_port_speed != None and circuit_z_upstream_speed != None:
+		body += f"<p><strong>Скорость:</strong> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps</p>"
+	if circuit_a_port_speed != None and circuit_a_upstream_speed != None:
+		body += f"<p><strong>Скорость A:</strong> D {circuit_a_port_speed / 1000} Mbps / U {circuit_a_upstream_speed / 1000} Mbps</p>"
+	body += f"<p><strong>Контакты:</strong></p>"
+	body += contact_list
 
 
 	html = f"""
@@ -223,7 +230,7 @@ def send_email(email_to,
 		msg = MIMEText(html, "html")
 		msg["From"] = netbox.configuration.EMAIL['USERNAME']
 		msg["To"] = email_to
-		msg["Subject"] = "Информация для провайдера"
+		msg["Subject"] = f"Информация по подключению {name}"
 		server.sendmail(netbox.configuration.EMAIL['USERNAME'], email_to, msg.as_string())
 	except Exception as err:
 		return err
