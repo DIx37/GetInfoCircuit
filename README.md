@@ -1,3 +1,4 @@
+# Get info circuit
 <p>Скрипт для сбора информации о подключении с возможность её отправки на почту</p>
 <p>Для отправки почты настройте в NetBox "/opt/netbox/netbox/netbox/configuration.py":</p>
 <pre><code class="language-python"># Email settings

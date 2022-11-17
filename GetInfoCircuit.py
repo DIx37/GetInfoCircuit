@@ -21,7 +21,7 @@ class GetProviderInfo(Script):
 
 	site = ObjectVar(
 		model = Site,
-		description = "Выберите Site"
+		description = "Выберите Объект"
 	)
 
 
@@ -41,35 +41,45 @@ class GetProviderInfo(Script):
 
 	def run(self, data, commit):
 		try:
+			log_info = ""
 			site = data['site']
 			circuit_type = data['circuit_type']
-
-
 			name = site.name
 			physical_address = site.physical_address
 			latitude = site.latitude
 			longitude = site.longitude
 			site_comments = site.comments
-
-
 			circuit_type_name = circuit_type.name
 
 
-			self.log_info(f"<b>Сайт:</b> {name}")
-			self.log_info(f"<b>Адрес:</b> {physical_address}")
+			log_info += f"{name}<p>"
+			log_info += f"<b>Адрес:</b> {physical_address}<p>"
 			if latitude != None and longitude != None:
-				self.log_info(f"<b>Широта:</b> {latitude}")
-				self.log_info(f"<b>Долгота:</b> {longitude}")
+				log_info  += f"<b>Широта:</b> {latitude} <b>Долгота:</b> {longitude}<p>"
 			if site_comments != "":
-				self.log_info(f"<b>Комментарий Site:</b> {site_comments}")
-			self.log_info(f"<b>Тип подключения:</b> {circuit_type_name}")
+				log_info += f"<b>Комментарий Объекта:</b> {site_comments}<p>"
+			log_info += f"<b>Тип подключения:</b> {circuit_type_name}<p>"
 
 
 			for i in CircuitTermination.objects.filter(site_id=site.id):
 				for j in Circuit.objects.filter(id=i.circuit.id):
 					if circuit_type.id == j.id:
 						provider_id = j.provider.id
-						self.log_info(f"<b>Провайдер:</b> {j.provider.name}")
+
+
+			provider_name = Provider.objects.get(id = provider_id).name
+			provider_account = Provider.objects.get(id = provider_id).account
+			provider_portal_url = Provider.objects.get(id = provider_id).portal_url
+			provider_comments = Provider.objects.get(id = provider_id).comments
+
+
+			log_info += f"<b>Провайдер:</b> {provider_name}<p>"
+			log_info += f"<b>Договор:</b> {provider_account}<p>"
+			if provider_portal_url != None:
+				log_info += f"<b>Сайт:</b> {provider_portal_url}<p>"
+			if provider_comments != None:
+				log_info += f"<b>Комментарий Провайдера:</b> {provider_comments}<p>"
+
 
 			contact_list = ""
 			for contact in ContactAssignment.objects.filter(object_id = provider_id):
@@ -82,21 +92,7 @@ class GetProviderInfo(Script):
 							</ul>
 						</li>
 					</ul>'''
-				self.log_info(f"<b>Имя:</b> {contact.contact.name}<p><b>Телефон:</b> {contact.contact.phone}<p><b>Почта:</b> {contact.contact.email}")
-
-
-			provider_name = Provider.objects.get(id = provider_id).name
-			provider_account = Provider.objects.get(id = provider_id).account
-			provider_portal_url = Provider.objects.get(id = provider_id).portal_url
-			provider_comments = Provider.objects.get(id = provider_id).comments
-
-
-			self.log_info(f"<b>Провайдер:</b> {provider_name}<p>")
-			self.log_info(f"<b>Договор:</b> {provider_account}<p>")
-			if provider_portal_url != None:
-				self.log_info(f"<b>Сайт:</b> {provider_portal_url}<p>")
-			if provider_comments != None:
-				self.log_info(f"<b>Комментарий Провайдера:</b> {provider_comments}<p>")
+				log_info += f"&nbsp;&nbsp;&nbsp;<b>Имя:</b> {contact.contact.name}<p>&nbsp;&nbsp;&nbsp;<b>Телефон:</b> {contact.contact.phone}<p>&nbsp;&nbsp;&nbsp;<b>Почта:</b> {contact.contact.email}<p>"
 
 
 			circuit_id = Circuit.objects.get(provider_id = provider_id).id
@@ -110,17 +106,18 @@ class GetProviderInfo(Script):
 
 
 			if circuit_id != None:
-				self.log_info(f"<b>Договор подключения:</b> {circuit_id}<p>")
+				log_info += f"<b>Договор подключения:</b> {circuit_id}<p>"
 			if circuit_termination_date != None:
-				self.log_info(f"<b>Дата подключения:</b> {circuit_termination_date}<p>")
+				log_info += f"<b>Дата подключения:</b> {circuit_termination_date}<p>"
 			if circuit_description != None:
-				self.log_info(f"<b>Описание:</b> {circuit_description}<p>")
+				log_info += f"<b>Описание:</b> {circuit_description}<p>"
 			if circuit_z_port_speed != None and circuit_z_upstream_speed != None:
-				self.log_info(f"<b>Скорость:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>")
+				log_info += f"<b>Скорость:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>"
 			if circuit_a_port_speed != None and circuit_a_upstream_speed != None:
-				self.log_info(f"<b>Скорость A:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>")
-			if circuit_comments != None:
-				self.log_info(f"<b>comments:</b> {circuit_comments}<p>")
+				log_info += f"<b>Скорость A:</b> D {circuit_z_port_speed / 1000} Mbps / U {circuit_z_upstream_speed / 1000} Mbps<p>"
+			if circuit_comments != "":
+				log_info += f"<b>Комментарий Подключения:</b> {circuit_comments}<p>"
+			self.log_info(log_info)
 
 
 			if data['check_send_email'] == True:
@@ -178,6 +175,7 @@ def send_email(email_to,
 				circuit_comments
 				):
 
+
 	server = smtplib.SMTP(netbox.configuration.EMAIL['SERVER'], netbox.configuration.EMAIL['PORT'])
 	if netbox.configuration.EMAIL['USE_TLS'] == True:
 		server.starttls()
@@ -224,6 +222,7 @@ def send_email(email_to,
 		</body>
 	</html>
 	"""
+
 
 	try:
 		server.login(netbox.configuration.EMAIL['USERNAME'], netbox.configuration.EMAIL['PASSWORD'])
