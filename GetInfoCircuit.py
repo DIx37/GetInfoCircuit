@@ -13,7 +13,7 @@ import smtplib
 
 class GetProviderInfo(Script):
 	class Meta:
-		name = "GetProviderInfo"
+		name = "Get Provider Info"
 		description = "Поиск информации по провайдеру"
 		commit_default = False
 		job_timeout = 120
@@ -61,10 +61,10 @@ class GetProviderInfo(Script):
 			log_info += f"<b>Тип подключения:</b> {circuit_type_name}<p>"
 
 
-			for i in CircuitTermination.objects.filter(site_id=site.id):
-				for j in Circuit.objects.filter(id=i.circuit.id):
-					if circuit_type.id == j.id:
-						provider_id = j.provider.id
+			for circuit_termination in CircuitTermination.objects.filter(site_id=site.id):
+				for circuit in Circuit.objects.filter(cid=circuit_termination.circuit.cid):
+					if circuit_type.id == circuit.type.id:
+						provider_id = circuit.provider.id
 
 
 			provider_name = Provider.objects.get(id = provider_id).name
@@ -95,13 +95,21 @@ class GetProviderInfo(Script):
 				log_info += f"&nbsp;&nbsp;&nbsp;<b>Имя:</b> {contact.contact.name}<p>&nbsp;&nbsp;&nbsp;<b>Телефон:</b> {contact.contact.phone}<p>&nbsp;&nbsp;&nbsp;<b>Почта:</b> {contact.contact.email}<p>"
 
 
-			circuit_id = Circuit.objects.get(provider_id = provider_id).id
+			circuit_id = Circuit.objects.get(provider_id = provider_id).cid
 			circuit_termination_date = Circuit.objects.get(provider_id = provider_id).termination_date
 			circuit_description = Circuit.objects.get(provider_id = provider_id).description
-			circuit_a_port_speed = Circuit.objects.get(provider_id = provider_id).termination_a.port_speed
-			circuit_z_port_speed = Circuit.objects.get(provider_id = provider_id).termination_z.port_speed
-			circuit_a_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_a.upstream_speed
-			circuit_z_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_z.upstream_speed
+			try:
+				circuit_a_port_speed = Circuit.objects.get(provider_id = provider_id).termination_a.port_speed
+				circuit_a_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_a.upstream_speed
+			except Exception as err:
+				circuit_a_port_speed = None
+				circuit_a_upstream_speed = None
+			try:
+				circuit_z_port_speed = Circuit.objects.get(provider_id = provider_id).termination_z.port_speed
+				circuit_z_upstream_speed = Circuit.objects.get(provider_id = provider_id).termination_z.upstream_speed
+			except:
+				circuit_z_port_speed = None
+				circuit_z_upstream_speed = None
 			circuit_comments = Circuit.objects.get(provider_id = provider_id).comments
 
 
